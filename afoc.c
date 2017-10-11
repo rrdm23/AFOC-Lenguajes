@@ -94,7 +94,7 @@ void sub(){
 void mul(){
     int tmp = B1 * B2;
     if (tmp == 0)
-        ZF = 1;
+        ZF  = 1;
     if (tmp < 0)
         SF = 1;
     B3 = tmp/0x100;
@@ -146,6 +146,42 @@ short MAR = 0;
 //j. MBR
 short MBR = 0;
 
+void mov (char fuente, char destino){
+    destino = fuente;
+}
+
+short out(char reg){
+    return getReg(reg);
+}
+
+void in(char reg, short val){
+    setReg(reg, val);
+}
+
+void cmp(char oper1, char oper2){
+    if (oper1 - oper2 == 0)
+        ZF = 1;
+    else
+        ZF = 0;
+}
+
+void jmp(short dato){
+    MAR = dato;
+}
+
+void jz(short dato){
+    if (ZF == 0)
+        MAR = dato;
+}
+
+void cls(){
+    IF = 0;
+}
+
+void sti(){
+    IF = 1;
+}
+
 int main (){
     //short val1 = 0;
     //short val2 = 0;
@@ -156,3 +192,4 @@ int main (){
     add();
     printf ("Resultado: %d\n", B3);
 }
+
