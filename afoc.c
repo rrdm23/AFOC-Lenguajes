@@ -1,25 +1,51 @@
 #include <stdio.h>
 #include "memoria.h"
 
-//a. Flags
+/* Declaracion de Memoria */
+struct Inst Memoria[256]; 
+
+
+/* Registros completos */
+int AX,BX,CX,DX;
+
+/* Variables de los distintos parametros */
+int par1;
+int par2;
+
+
+/* Instruccion Actual (para la memoria) */
+int instActual = 0;
+
+/* a. Flags */
 char CF = 0;
 char SF = 0;
 char ZF = 0;
 char IF = 0;
 
-//b. UC: Nel :v
+/* b. UC: No hace falta */
 
-//c. IR (struct)
-//instruccion* IR = NULL;
+/* c. IR (struct)*/
+Inst IR = NULL; 
 
-//d. PC
+/* d. PC */
 int PC = -1; 
 
-//e. RT
+/* e. RT */
 char AH, AL = 0;
 char BH, BL = 0;
 char CH, CL = 0;
 char DH, DL = 0;
+
+/* Junta Registros */
+void XX (int XH, int XL, int X){ /*Toma cada registro y junta sus cantidades*/
+    X = XH * 256 + XL;
+}
+
+/* Separa (reparte) Registros */
+void repartirX(int XX, int L,int H){ /* Reparte los datos del registro el L Y el H, segun corresponda */
+    L=XX / 256;
+    H= XX - (L * 256);
+}
 
 short getReg(char reg){
     short RX;
@@ -63,13 +89,13 @@ void setReg(char reg, short valor){
     }
 }
 
-//g. E/S ALU
+/* g. E/S ALU */
 short B1 = 0;
 short B2 = 0;
 short B3 = 0;
 short B4 = 0;
 
-//f. ALU
+/* f. ALU */
 void add (){
     int aux = B1 + B2;
     if (aux > 32767){
@@ -139,46 +165,57 @@ void shr(){
     B3 = B1 >> B2;
 }
 
-//h. MAR
+/* h. MAR */
 short MAR = 0;
 
-//i. BD: Nel :v
+/* i. BD: No hace falta */
 
-//j. MBR
+/* j. MBR */
 short MBR = 0;
 
 
-
-
-/* BHS */
-
-/* Declaracion de Memoria */
-struct Inst Memoria[256]; 
-
-/* Registros */
-void XX (int XH, int XL, int X){ /*Toma cada registro y junta sus cantidades*/
-    X = XH * 256 + XL;
+void mov (char fuente, char destino){
+    destino = fuente;
 }
 
-void repartirX(int XX, int L,int H){ /* Reparte los datos del registro el L Y el H, segun corresponda */
-    L=XX / 256;
-    H= XX - (L * 256);
+short out(char reg){
+    return getReg(reg);
 }
 
-/* Registros completos */
-int AX,BX,CX,DX;
+void in(char reg, short val){
+    setReg(reg, val);
+}
 
-/* Punteros de los distintos direccionamientos de memoria de los parametros */
-int par1;
-int par2;
+void cmp(char oper1, char oper2){
+    if (oper1 - oper2 == 0)
+        ZF = 1;
+    else
+        ZF = 0;
+}
+
+void jmp(short dato){
+    MAR = dato;
+}
+
+void jz(short dato){
+    if (ZF == 0)
+        MAR = dato;
+}
+
+void cls(){
+    IF = 0;
+}
+
+void sti(){
+    IF = 1;
+}
 
 
-/* Instruccion Actual (para la memoria) */
-int instActual = 0;
+
 
 /* CICLO DE FETCH */
 
-int parteFtch = 0; /* variable que sirve para saber en que parte del ciclo va, puede ser 1,2,3,4. el 0 es cuando no ha hecho nada del ciclo */
+int parteFtch = 0; /* variable que sirve para saber en que parte del ciclo va, puede ser 1,2,3. El 0 es cuando no ha hecho nada del ciclo */
 
 int estado = 0; /* estado es para la simulacion: 
 			0=simulacion apagada
@@ -240,8 +277,8 @@ void ftch2(){ /*envia un mensaje "la instruccion se decodifico"*/
 void ftch3(){/*obtiene los operandos*/
     /*  AX = 0              BX = 1          CX = 2          DX = 3
 	AL = 4              BL = 5          CL = 6          DL = 7
-	AH = 8              BH = 9          CH = 10       DH = 11
-	[dir] = 12          [BL] = 13      [BH] = 14    inm = 15
+	AH = 8              BH = 9          CH = 10         DH = 11
+	[dir] = 12          [BL] = 13       [BH] = 14       inm = 15
     */
 
     switch (Memoria[PC].opD){
@@ -285,11 +322,6 @@ void ftch3(){/*obtiene los operandos*/
 
 
 
-/* BHS */
-
-
-
-
 int main (){
     
     //short val1 = 0;
@@ -303,12 +335,6 @@ int main (){
 
    return 0;
 }
-
-
-
-
-
-
 
 
 
