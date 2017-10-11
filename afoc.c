@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "memoria.h"
 
 //a. Flags
 char CF = 0;
@@ -12,7 +13,7 @@ char IF = 0;
 //instruccion* IR = NULL;
 
 //d. PC
-char PC = 0;
+int PC = -1; 
 
 //e. RT
 char AH, AL = 0;
@@ -94,7 +95,7 @@ void sub(){
 void mul(){
     int tmp = B1 * B2;
     if (tmp == 0)
-        ZF  = 1;
+        ZF = 1;
     if (tmp < 0)
         SF = 1;
     B3 = tmp/0x100;
@@ -146,43 +147,151 @@ short MAR = 0;
 //j. MBR
 short MBR = 0;
 
-void mov (char fuente, char destino){
-    destino = fuente;
+
+
+
+/* BHS */
+
+/* Declaracion de Memoria */
+struct Inst Memoria[256]; 
+
+/* Registros */
+void XX (int XH, int XL, int X){ /*Toma cada registro y junta sus cantidades*/
+    X = XH * 256 + XL;
 }
 
-short out(char reg){
-    return getReg(reg);
+void repartirX(int XX, int L,int H){ /* Reparte los datos del registro el L Y el H, segun corresponda */
+    L=XX / 256;
+    H= XX - (L * 256);
 }
 
-void in(char reg, short val){
-    setReg(reg, val);
+/* Registros completos */
+int AX,BX,CX,DX;
+
+/* Punteros de los distintos direccionamientos de memoria de los parametros */
+int par1;
+int par2;
+
+
+/* Instruccion Actual (para la memoria) */
+int instActual = 0;
+
+/* CICLO DE FETCH */
+
+int parteFtch = 0; /* variable que sirve para saber en que parte del ciclo va, puede ser 1,2,3,4. el 0 es cuando no ha hecho nada del ciclo */
+
+int estado = 0; /* estado es para la simulacion: 
+			0=simulacion apagada
+			1=corra todo (espere en ciclo inf)     
+			2=Pasito a pasito:pase una y espere	    
+			3=Detenida:no haga nada y espere    */
+
+void cicloFetch(struct Inst Memoria[256]){ 
+    while (1){
+	if (estado==0){
+	    break;
+	}
+	else if(estado==1){
+	    //haga todo
+	    continue;
+	}
+	else if(estado==2){
+	    if(parteFtch==0){
+		//haga Fetch 1
+		parteFtch++;
+		continue;
+	    }
+	    else if (parteFtch==1){
+		//haga Fetch 2
+		parteFtch++;
+		continue;	    }
+	    else if (parteFtch==2){
+		//haga Fetch 3
+		parteFtch++;
+		continue;	    }
+	    else if (parteFtch==3){
+		//haga Fetch 4
+		if(instActual==255){
+		    return;
+		}
+		else{
+		    instActual++;
+		    parteFtch = 0;
+		    continue;
+		}
+	    }
+	}
+	else if(estado==3){
+	    continue;
+	}
+        
+    }
 }
 
-void cmp(char oper1, char oper2){
-    if (oper1 - oper2 == 0)
-        ZF = 1;
-    else
-        ZF = 0;
+
+void ftch1(){//devuelve la instruccion que esta
+    PC++;
 }
 
-void jmp(short dato){
-    MAR = dato;
+void ftch2(){ /*envia un mensaje "la instruccion se decodifico"*/
+    /* MENSAJE */
 }
 
-void jz(short dato){
-    if (ZF == 0)
-        MAR = dato;
+void ftch3(){/*obtiene los operandos*/
+    /*  AX = 0              BX = 1          CX = 2          DX = 3
+	AL = 4              BL = 5          CL = 6          DL = 7
+	AH = 8              BH = 9          CH = 10       DH = 11
+	[dir] = 12          [BL] = 13      [BH] = 14    inm = 15
+    */
+
+    switch (Memoria[PC].opD){
+    	    case 0: XX(AH,AL,AX); par1 = AX; break;
+	    case 1: XX(BH,BL,BX); par1 = BX; break;
+    	    case 2: XX(CH,CL,CX); par1 = CX; break;
+    	    case 3: XX(DH,DL,DX); par1 = DX; break;
+    	    case 4: par1 = AL; break;
+    	    case 5: par1 = BL; break;
+    	    case 6: par1 = CL; break;
+    	    case 7: par1 = DL; break;
+    	    case 8: par1 = AH; break;
+    	    case 9: par1 = BH; break;
+    	    case 10: par1 = CH; break;
+    	    case 11: par1 = DH; break;
+    	    case 12: par1 = Memoria[PC].dato4; break;
+    	    case 13: par1 = &BL; break;
+    	    case 14: par1 = &BH; break;
+    	    case 15: par1 = Memoria[PC].dato4; break;
+    }
+
+    switch (Memoria[PC].opF){
+    	    case 0: XX(AH,AL,AX); par2 = AX; break;
+	    case 1: XX(BH,BL,BX); par2 = BX; break;
+    	    case 2: XX(CH,CL,CX); par2 = CX; break;
+    	    case 3: XX(DH,DL,DX); par2 = DX; break;
+    	    case 4: par2 = AL; break;
+    	    case 5: par2 = BL; break;
+    	    case 6: par2 = CL; break;
+    	    case 7: par2 = DL; break;
+    	    case 8: par2 = AH; break;
+    	    case 9: par2 = BH; break;
+    	    case 10: par2 = CH; break;
+    	    case 11: par2 = DH; break;
+    	    case 12: par2 = Memoria[PC].dato4; break;
+    	    case 13: par2 = &BL; break;
+    	    case 14: par2 = &BH; break;
+    	    case 15: par2 = Memoria[PC].dato4; break;
+    }
 }
 
-void cls(){
-    IF = 0;
-}
 
-void sti(){
-    IF = 1;
-}
+
+/* BHS */
+
+
+
 
 int main (){
+    
     //short val1 = 0;
     //short val2 = 0;
     printf("Digite un valor para B1: ");
@@ -191,5 +300,30 @@ int main (){
     scanf("%hd", &B2);
     add();
     printf ("Resultado: %d\n", B3);
+
+   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
