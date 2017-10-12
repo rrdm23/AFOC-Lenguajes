@@ -25,10 +25,10 @@ char IF = 0;
 /* b. UC: No hace falta */
 
 /* c. IR (struct)*/
-Inst IR = NULL; 
+struct Inst IR; 
 
 /* d. PC */
-int PC = -1; 
+int PC = 0; 
 
 /* e. RT */
 char AH, AL = 0;
@@ -166,12 +166,12 @@ void shr(){
 }
 
 /* h. MAR */
-short MAR = 0;
+short MAR = -1;
 
 /* i. BD: No hace falta */
 
 /* j. MBR */
-short MBR = 0;
+struct Inst MBR;
 
 
 void mov (char fuente, char destino){
@@ -229,25 +229,31 @@ void cicloFetch(struct Inst Memoria[256]){
 	    break;
 	}
 	else if(estado==1){
-	    //haga todo
+	    /*haga todo*/
+	    ftch1();
+	    ftch2();
+	    ftch3();
 	    continue;
 	}
 	else if(estado==2){
 	    if(parteFtch==0){
-		//haga Fetch 1
+		/*haga Fetch 1*/
+		ftch1();
 		parteFtch++;
 		continue;
 	    }
 	    else if (parteFtch==1){
-		//haga Fetch 2
+		/*haga Fetch 2*/
+		ftch2();
 		parteFtch++;
 		continue;	    }
 	    else if (parteFtch==2){
-		//haga Fetch 3
+		/*haga Fetch 3*/
+		ftch3();
 		parteFtch++;
 		continue;	    }
 	    else if (parteFtch==3){
-		//haga Fetch 4
+		/*haga Fetch 4*/			/*FALTA*/
 		if(instActual==255){
 		    return;
 		}
@@ -266,8 +272,8 @@ void cicloFetch(struct Inst Memoria[256]){
 }
 
 
-void ftch1(){//devuelve la instruccion que esta
-    PC++;
+void ftch1(){/*devuelve la instruccion que esta*/
+    MAR++;
 }
 
 void ftch2(){ /*envia un mensaje "la instruccion se decodifico"*/
@@ -281,7 +287,7 @@ void ftch3(){/*obtiene los operandos*/
 	[dir] = 12          [BL] = 13       [BH] = 14       inm = 15
     */
 
-    switch (Memoria[PC].opD){
+    switch (MBR.opD){
     	    case 0: XX(AH,AL,AX); par1 = AX; break;
 	    case 1: XX(BH,BL,BX); par1 = BX; break;
     	    case 2: XX(CH,CL,CX); par1 = CX; break;
@@ -300,7 +306,7 @@ void ftch3(){/*obtiene los operandos*/
     	    case 15: par1 = Memoria[PC].dato4; break;
     }
 
-    switch (Memoria[PC].opF){
+    switch (MBR.opF){
     	    case 0: XX(AH,AL,AX); par2 = AX; break;
 	    case 1: XX(BH,BL,BX); par2 = BX; break;
     	    case 2: XX(CH,CL,CX); par2 = CX; break;
@@ -320,12 +326,70 @@ void ftch3(){/*obtiene los operandos*/
     }
 }
 
+/* MICROINSTRUCCIONES */
+
+/* movReg (<-):permite mover datos del registro X al registro Y */
+void movReg(int R1, int R2){ /* R1 <- R2 */
+    R1 = R2;
+}
+
+/* ALU: op [ejecuta la operación correspondiente de la ALU (add, sub, mul, div, and, or, xor, not, shl o shr)] */
+void ALU(char* operacion){
+    if (operacion = "add")		{add();}
+    else if (operacion == "sub")	{sub();}
+    else if (operacion == "mul")	{mul();}
+    else if (operacion == "div")	{div_mod();}
+    else if (operacion == "and")	{and();}
+    else if (operacion == "or")		{or();}
+    else if (operacion == "xor")	{xor();}
+    else if (operacion == "not")	{not();}
+    else if (operacion == "shl")	{shl();}
+    else if (operacion == "shr")	{shr();}   
+}
+
+/* MEM: op [ejecuta la operación de acceso a la memoria correspondiente (read o write)] */
+void MEM(char* tipo){
+    if (tipo == "read"){READ();}
+    else if (tipo == "write"){WRITE();}
+}
+
+void READ(short address){
+    MAR = address;
+    MBR = Memoria[MAR];
+}
+
+void WRITE(struct Inst Buffer, short Address){
+    MBR = Buffer;
+    MAR = Address;
+}
+
+/* TEST: flag, N [bifurca a la instrucción N del microprograma si la bandera flag está encendida] */
+void TEST(char flag, char N){
+    if (flag=1){
+	MAR = N;}
+    else{
+	return;}
+}
+
+/* IN [abre una ventana y solicita un número que dejará almacenado en el MBR] */
+void IN(int num){
+    MBR.orden = 0;
+    MBR.cod = 0;
+    MBR.opF = 0;
+    MBR.opD = 0;
+    MBR.dato4 = num;
+}
+
+/* OUT [En la ventana de salida despliega el contenido del MBR] */
+void OUT(){
+    /* VENTANA QUE DESPLIEGA EL CONTENIDO DEL MBR */
+}
 
 
 int main (){
     
-    //short val1 = 0;
-    //short val2 = 0;
+    /*short val1 = 0;*/
+    /*short val2 = 0;*/
     printf("Digite un valor para B1: ");
     scanf("%hd", &B1);
     printf("Digite un valor para B2: ");
