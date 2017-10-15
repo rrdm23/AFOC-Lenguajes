@@ -7,8 +7,8 @@
 struct Inst Memoria[256]; 
 
 /* Variables de los distintos parametros */
-int par1;
-int par2;
+short* par1;
+short* par2;
 
 /* Instruccion Actual (para la memoria) */
 int instActual = 0;
@@ -22,27 +22,16 @@ char IF = 0;
 /* b. UC: No hace falta */
 
 /* c. IR (struct)*/
-struct Inst* IR = NULL; 
+struct Inst IR; /*struct Inst* IR = NULL; */
 
 /* d. PC */
-int PC = 0; 
+short PC = 0; 
 
 /* e. RT */
 char AH, AL = 0;
 char BH, BL = 0;
 char CH, CL = 0;
 char DH, DL = 0;
-
-/* Junta Registros
-void XX (int XH, int XL, int X){ Toma cada registro y junta sus cantidades
-    X = XH * 256 + XL;
-}*/
-
-/* Separa (reparte) Registros
-void repartirX(int XX, int L,int H){ Reparte los datos del registro el L Y el H, segun corresponda
-    L=XX / 256;
-    H= XX - (L * 256);
-}*/
 
 short getReg(char reg){
     short RX;
@@ -84,7 +73,7 @@ void setReg(char reg, short valor){
             DL = valor%0x100;
             DH = valor/0x100;
     }
-}
+}  
 
 /* g. E/S ALU */
 short B1 = 0;
@@ -198,16 +187,6 @@ void jz(short dato){
         MAR = dato;
 }
 
-void cls(){
-    IF = 0;
-}
-
-void sti(){
-    IF = 1;
-}
-
-
-
 
 /* CICLO DE FETCH */
 
@@ -225,8 +204,8 @@ void cicloFetch(struct Inst Memoria[256]){
 	    break;
 	}
 	else if(estado==1){
-	    //haga todo
-            ftch1();
+	    /*haga todo*/
+	    ftch1();
 	    ftch2();
 	    ftch3();
 	    continue;
@@ -236,17 +215,20 @@ void cicloFetch(struct Inst Memoria[256]){
 		/*haga Fetch 1*/
 		ftch1();
 		parteFtch++;
+		estado = 3;
 		continue;
 	    }
 	    else if (parteFtch==1){
 		/*haga Fetch 2*/
 		ftch2();
 		parteFtch++;
+		estado = 3;
 		continue;	    }
 	    else if (parteFtch==2){
 		/*haga Fetch 3*/
 		ftch3();
 		parteFtch++;
+		estado = 3;
 		continue;	    }
 	    else if (parteFtch==3){
 		/*haga Fetch 4*/			/*FALTA*/
@@ -256,19 +238,21 @@ void cicloFetch(struct Inst Memoria[256]){
 		else{
 		    instActual++;
 		    parteFtch = 0;
+		    estado = 3;
 		    continue;
 		}
 	    }
 	}
 	else if(estado==3){
 	    continue;
-	}
+	}       
     }
 }
 
 
 void ftch1(){/*devuelve la instruccion que esta*/
-    MAR++;
+    MAR = PC;
+    PC++;
 }
 
 void ftch2(){ /*envia un mensaje "la instruccion se decodifico"*/
@@ -1063,55 +1047,62 @@ struct Inst parseInstr(char* arch, int lineaInst){
 /* MICROINSTRUCCIONES */
 
 /* movReg (<-):permite mover datos del registro X al registro Y */
-void movReg(int R1, int R2){ /* R1 <- R2 */
-    R1 = R2;
+void movReg(short* R1, short* R2){ /* R1 <- R2 */
+    int tmp = &R2;
+    *R1 = tmp;
 }
 
 /* ALU: op [ejecuta la operación correspondiente de la ALU (add, sub, mul, div, and, or, xor, not, shl o shr)] */
 void ALU(char* operacion){
-    if (operacion = "add")		{add();}
-    else if (operacion == "sub")	{sub();}
-    else if (operacion == "mul")	{mul();}
-    else if (operacion == "div")	{div_mod();}
-    else if (operacion == "and")	{and();}
-    else if (operacion == "or")		{or();}
-    else if (operacion == "xor")	{xor();}
-    else if (operacion == "not")	{not();}
-    else if (operacion == "shl")	{shl();}
-    else if (operacion == "shr")	{shr();}   
+    if (!strcmp(operacion, "add"))		{add();}
+    else if (!strcmp(operacion, "sub"))		{sub();}
+    else if (!strcmp(operacion, "mul"))		{mul();}
+    else if (!strcmp(operacion, "div_mod"))	{div_mod();}
+    else if (!strcmp(operacion, "and"))		{and();}
+    else if (!strcmp(operacion, "or"))		{or();}
+    else if (!strcmp(operacion, "xor"))		{xor();}
+    else if (!strcmp(operacion, "not"))		{not();}
+    else if (!strcmp(operacion, "shl"))		{shl();}
+    else if (!strcmp(operacion, "shr"))		{shr();}   
 }
 
 /* MEM: op [ejecuta la operación de acceso a la memoria correspondiente (read o write)] */
 void MEM(char* tipo){
-    if (tipo == "read"){READ();}
-    else if (tipo == "write"){WRITE();}
+    if (strcmp(tipo, "read")){READ();}
+    else if (strcmp(tipo, "write")){WRITE();}
 }
 
 void READ(short address){
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */
     MAR = address;
     MBR = Memoria[MAR];
 }
 
 void WRITE(struct Inst Buffer, short Address){
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */
     MBR = Buffer;
     MAR = Address;
 }
 
 /* TEST: flag, N [bifurca a la instrucción N del microprograma si la bandera flag está encendida] */
 void TEST(char flag, char N){
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */
     if (flag=1){
-	MAR = N;}
+	PC = N;}
     else{
 	return;}
 }
 
 /* IN [abre una ventana y solicita un número que dejará almacenado en el MBR] */
-void IN(int num){
-    MBR.orden = 0;
-    MBR.cod = 0;
-    MBR.opF = 0;
-    MBR.opD = 0;
-    MBR.dato4 = num;
+void IN(){ /*IN(short num)*/
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */\
+    short cambiar = 0;
+    scanf("%hd", &cambiar);										/*CAMBIAR A GRAFICA*/
+    MBR.orden = -1;
+    MBR.cod = -1;
+    MBR.opF = -1;
+    MBR.opD = -1;
+    MBR.dato4 = cambiar;
 }
 
 /* OUT [En la ventana de salida despliega el contenido del MBR] */
@@ -1119,10 +1110,114 @@ void OUT(){
     /* VENTANA QUE DESPLIEGA EL CONTENIDO DEL MBR */
 }
 
-int main(){    
-    struct Inst x = parseInstr("arch.txt", 3);
-    printf("Fuente: %d\nDestino: %d\nCuarto dato: %d\n", x.opF, x.opD, x.dato4);
+
+/* INSTRUCCIONES */
+
+/* MOV */
+void MOV(){
+    movReg(*par1,*par2);
+}
+
+/* OUT	tiene 1 parametro */
+void outU(){
+    MBR.orden = -1;
+    MBR.cod = -1;
+    MBR.opF = -1;
+    MBR.opD = -1;
+    MBR.dato4 = *par1;
+    OUT();
+}
+
+/* IN 	tiene 1 parametro*/
+void inU(){
+    IN();
+    short y = MBR.dato4;
+    short* x = &y;
+    movReg(&par1,&x);
+}
+
+/* JMP */
+void JMP(){
+    PC = MBR.opD;
+}
+
+/* JZ */
+void JZ(){
+    if(ZF==1){
+	JMP();
+    }
+}
+
+short verificaS (short num1, short num2){
+    while(num1>0 && num2>0){
+	char u1 = num1 % 10;
+	char u2 = num2 % 10;
+
+	if (u1+u2>=10){return 1;}
+	else{
+	    num1 = num1 / 10;
+	    num2 = num2 / 10;}
+    }
     return 0;
+}
+
+short pot(char base, char exp){ /* trabajara solo pot positivas, no hace falta validar*/ 
+    short result = 1;
+    while(exp>0){
+	result = result * base;
+	exp--;
+    }
+    return result;
+}
+
+short Complemento(short num){
+    char exp = 0;
+    while (num!=0){
+	exp++;
+	num=num/10;
+    }
+    return (pot(10,exp));
+}
+
+short restaS(short num1, short num2){
+    short compl = Complemento(num2);
+    return (verificaS(num1,compl));
+}
+
+/* CMP */
+void CMP(){/* destino = destino - fuente */ /* Afecta a CF, SF y ZF*/
+    short destino = *par1;
+    short fuente = *par2;
+    B3 = destino - fuente;
+    /* SIGN FLAG */
+    if (B3 < 0){SF = 1;}
+
+    /* ZERO FLAG */
+    if (B3 = 0){ZF = 1;}
+    
+    /* CARRY FLAG */
+    if (restaS(destino,fuente)==1){CF = 1;}
+}
+
+
+
+
+/* CLI */
+void cls(){
+    IF = 0;
+}
+
+/* STI */
+void sti(){
+    IF = 1;
+}
+
+
+int main (){
+   struct Inst x = parseInstr("arch.txt", 3);
+   printf("Fuente: %d\nDestino: %d\nCuarto dato: %d\n", x.opF, x.opD, x.dato4);
+   return 0;
+   
 }
 
 
