@@ -1,14 +1,17 @@
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 #include "memoria.h"
 
 /* Declaracion de Memoria */
 struct Inst Memoria[256]; 
 
+
+/* Registros completos */
+int AX,BX,CX,DX;
+
 /* Variables de los distintos parametros */
-int par1;
-int par2;
+short* par1;
+short* par2;
+
 
 /* Instruccion Actual (para la memoria) */
 int instActual = 0;
@@ -22,10 +25,10 @@ char IF = 0;
 /* b. UC: No hace falta */
 
 /* c. IR (struct)*/
-struct Inst* IR = NULL; 
+struct Inst IR; 
 
 /* d. PC */
-int PC = 0; 
+short PC = 0; 
 
 /* e. RT */
 char AH, AL = 0;
@@ -33,16 +36,16 @@ char BH, BL = 0;
 char CH, CL = 0;
 char DH, DL = 0;
 
-/* Junta Registros
-void XX (int XH, int XL, int X){ Toma cada registro y junta sus cantidades
+/* Junta Registros */
+void XX (int XH, int XL, int X){ /*Toma cada registro y junta sus cantidades*/
     X = XH * 256 + XL;
-}*/
+}
 
-/* Separa (reparte) Registros
-void repartirX(int XX, int L,int H){ Reparte los datos del registro el L Y el H, segun corresponda
+/* Separa (reparte) Registros */
+void repartirX(int XX, int L,int H){ /* Reparte los datos del registro el L Y el H, segun corresponda */
     L=XX / 256;
     H= XX - (L * 256);
-}*/
+}
 
 short getReg(char reg){
     short RX;
@@ -84,7 +87,7 @@ void setReg(char reg, short valor){
             DL = valor%0x100;
             DH = valor/0x100;
     }
-}
+}  
 
 /* g. E/S ALU */
 short B1 = 0;
@@ -170,6 +173,7 @@ short MAR = -1;
 /* j. MBR */
 struct Inst MBR;
 
+
 void mov (char fuente, char destino){
     destino = fuente;
 }
@@ -198,16 +202,6 @@ void jz(short dato){
         MAR = dato;
 }
 
-void cls(){
-    IF = 0;
-}
-
-void sti(){
-    IF = 1;
-}
-
-
-
 
 /* CICLO DE FETCH */
 
@@ -225,8 +219,8 @@ void cicloFetch(struct Inst Memoria[256]){
 	    break;
 	}
 	else if(estado==1){
-	    //haga todo
-            ftch1();
+	    /*haga todo*/
+	    ftch1();
 	    ftch2();
 	    ftch3();
 	    continue;
@@ -236,17 +230,20 @@ void cicloFetch(struct Inst Memoria[256]){
 		/*haga Fetch 1*/
 		ftch1();
 		parteFtch++;
+		estado = 3;
 		continue;
 	    }
 	    else if (parteFtch==1){
 		/*haga Fetch 2*/
 		ftch2();
 		parteFtch++;
+		estado = 3;
 		continue;	    }
 	    else if (parteFtch==2){
 		/*haga Fetch 3*/
 		ftch3();
 		parteFtch++;
+		estado = 3;
 		continue;	    }
 	    else if (parteFtch==3){
 		/*haga Fetch 4*/			/*FALTA*/
@@ -256,6 +253,7 @@ void cicloFetch(struct Inst Memoria[256]){
 		else{
 		    instActual++;
 		    parteFtch = 0;
+		    estado = 3;
 		    continue;
 		}
 	    }
@@ -263,12 +261,14 @@ void cicloFetch(struct Inst Memoria[256]){
 	else if(estado==3){
 	    continue;
 	}
+        
     }
 }
 
 
 void ftch1(){/*devuelve la instruccion que esta*/
-    MAR++;
+    MAR = PC;
+    PC++;
 }
 
 void ftch2(){ /*envia un mensaje "la instruccion se decodifico"*/
@@ -283,522 +283,103 @@ void ftch3(){/*obtiene los operandos*/
     */
 
     switch (MBR.opD){
-    	    case 0: par1 = getReg('A'); break;
-	    case 1: par1 = getReg('B'); break;
-    	    case 2: par1 = getReg('C'); break;
-    	    case 3: par1 = getReg('D'); break;
-    	    case 4: par1 = AL; break;
-    	    case 5: par1 = BL; break;
-    	    case 6: par1 = CL; break;
-    	    case 7: par1 = DL; break;
-    	    case 8: par1 = AH; break;
-    	    case 9: par1 = BH; break;
-    	    case 10: par1 = CH; break;
-    	    case 11: par1 = DH; break;
-    	    case 12: par1 = Memoria[PC].dato4; break;
-    	    case 13: par1 = &BL; break;
-    	    case 14: par1 = &BH; break;
-    	    case 15: par1 = Memoria[PC].dato4; break;
+    	    case 0: XX(AH,AL,AX); par1 = &AX; break;
+	    case 1: XX(BH,BL,BX); par1 = &BX; break;
+    	    case 2: XX(CH,CL,CX); par1 = &CX; break;
+    	    case 3: XX(DH,DL,DX); par1 = &DX; break;
+    	    case 4: par1 = &AL; break;
+    	    case 5: par1 = &BL; break;
+    	    case 6: par1 = &CL; break;
+    	    case 7: par1 = &DL; break;
+    	    case 8: par1 = &AH; break;
+    	    case 9: par1 = &BH; break;
+    	    case 10: par1 = &CH; break;
+    	    case 11: par1 = &DH; break;
+    	    case 12: par1 = &(Memoria[PC].dato4); break;
+    	    case 13: par1 = &(Memoria[BL].dato4); break;
+    	    case 14: par1 = &(Memoria[BH].dato4); break;
+    	    case 15: par1 = &(Memoria[PC].dato4); break;
     }
 
     switch (MBR.opF){
-    	    case 0: par2 = getReg('A'); break;
-	    case 1: par2 = getReg('B'); break;
-    	    case 2: par2 = getReg('C'); break;
-    	    case 3: par2 = getReg('D'); break;
-    	    case 4: par2 = AL; break;
-    	    case 5: par2 = BL; break;
-    	    case 6: par2 = CL; break;
-    	    case 7: par2 = DL; break;
-    	    case 8: par2 = AH; break;
-    	    case 9: par2 = BH; break;
-    	    case 10: par2 = CH; break;
-    	    case 11: par2 = DH; break;
-    	    case 12: par2 = Memoria[PC].dato4; break;
-    	    case 13: par2 = &BL; break;
-    	    case 14: par2 = &BH; break;
-    	    case 15: par2 = Memoria[PC].dato4; break;
+    	    case 0: XX(AH,AL,AX); par2 = &AX; break;
+	    case 1: XX(BH,BL,BX); par2 = &BX; break;
+    	    case 2: XX(CH,CL,CX); par2 = &CX; break;
+    	    case 3: XX(DH,DL,DX); par2 = &DX; break;
+    	    case 4: par2 = &AL; break;
+    	    case 5: par2 = &BL; break;
+    	    case 6: par2 = &CL; break;
+    	    case 7: par2 = &DL; break;
+    	    case 8: par2 = &AH; break;
+    	    case 9: par2 = &BH; break;
+    	    case 10: par2 = &CH; break;
+    	    case 11: par2 = &DH; break;
+    	    case 12: par2 = &(Memoria[PC].dato4); break;
+    	    case 13: par2 = &(Memoria[BL].dato4); break;
+    	    case 14: par2 = &(Memoria[BH].dato4); break;
+    	    case 15: par2 = &(Memoria[PC].dato4); break;
     }
 }
-
-char* getInstrLinea(char* arch, int linea){
-    char cwd[1024];
-    char* path = getcwd(cwd, sizeof(cwd));
-
-    char* pathS = malloc (sizeof(cwd)+1);
-    strcpy(pathS, path);
-    strcat(pathS, "/");
-
-    char* pathUs = malloc (sizeof(cwd)+25);
-    strcpy(pathUs, pathS);
-    strcat(pathUs, arch);
-    FILE* archInstr = fopen (pathUs, "r");
-    
-    free(pathS);
-    free(pathUs);
-    path = NULL;
-    memset(cwd, 0, 1024);
-
-    if (!archInstr)
-        return NULL;
-
-    int ptr = fgetc(archInstr);
-
-    int cont = 0;
-
-    while (ptr != EOF){
-        if (cont == linea){
-            char* tmpInst = malloc(sizeof(char)*6);
-            int charInst = 0;
-            while (ptr != ' ' && ptr != ':' && ptr != '\n'){
-                tmpInst[charInst] = ptr;
-                ptr = fgetc(archInstr);
-                charInst++;
-            }
-            char* instr = malloc(sizeof(char)*charInst);
-            memset(instr, 0, 8);
-            while (charInst > 0){
-                charInst--;
-                *(instr+charInst) = *(tmpInst+charInst);
-            }
-            free(tmpInst);
-            return instr;
-        }
-
-        else while (ptr != '\n'){
-            ptr = fgetc(archInstr);
-        }
-        ptr = fgetc(archInstr);
-        cont++;
-    }
-
-    fclose(archInstr);
-    return NULL;
-}
-
-int contLineas(char* arch){
-    char cwd[1024];
-    char* path = getcwd(cwd, sizeof(cwd));
-
-    char* pathS = malloc (sizeof(cwd)+1);
-    strcpy(pathS, path);
-    strcat(pathS, "/");
-
-    char* pathUs = malloc (sizeof(cwd)+25);
-    strcpy(pathUs, pathS);
-    strcat(pathUs, arch);
-    FILE* archC = fopen (pathUs, "r");
-    
-    free(pathS);
-    free(pathUs);
-    path = NULL;
-    memset(cwd, 0, 1024);
-
-    if (!archC)
-        return NULL;
-
-    int ptr = fgetc(archC);
-
-    int cont = 0;
-
-    while (ptr != EOF){
-        while (ptr != '\n'){
-            ptr = fgetc(archC);
-        }
-        ptr = fgetc(archC);
-        cont++;
-    }
-
-    fclose(archC);
-    return cont;
-}
-
-int numOper(int lineaInstr){
-    char cwd[1024];
-    char* path = getcwd(cwd, sizeof(cwd));
-
-    char* pathArch = malloc (sizeof(cwd));
-    strcpy(pathArch, path);
-    strcat(pathArch, "/listainstr.txt");
-    FILE* archInst = fopen (pathArch, "r");
-
-    free(pathArch);
-    path = NULL;
-    memset(cwd, 0, 1024);
-
-    if (!archInst)
-        return NULL;
-
-    int ptr = fgetc(archInst);
-
-    int cont = 0;
-
-    while (ptr != EOF){
-        if (cont == lineaInstr){
-            while (ptr != ':'){
-                ptr = fgetc(archInst);
-            }
-            ptr = fgetc(archInst);
-            int cantOp = ptr - 0x30;
-            fclose(archInst);
-            return (cantOp);
-        }
-        else while (ptr != '\n'){
-            ptr = fgetc(archInst);
-        }
-
-        ptr = fgetc(archInst);
-        cont++;
-    }
-    fclose(archInst);
-    return -1;
-}
-
-int operInst(int linea, char* tipoOp){
-    char cwd[1024];
-    char* path = getcwd(cwd, sizeof(cwd));
-
-    char* pathArch = malloc (sizeof(cwd));
-    strcpy(pathArch, path);
-    strcat(pathArch, "/listainstr.txt");
-    FILE* archInst = fopen (pathArch, "r");
-
-    free(pathArch);
-    path = NULL;
-    memset(cwd, 0, 1024);
-
-    if (!archInst)
-        return NULL;
-
-    int ptr = fgetc(archInst);
-
-    int cont = 0;
-
-    char opActual[2];
-
-    while (ptr != EOF){
-        if (cont == linea){
-            while (ptr != ':'){
-                ptr = fgetc(archInst);
-            }
-            ptr = fgetc(archInst);
-            while (ptr != ':'){
-                ptr = fgetc(archInst);
-            }
-            ptr = fgetc(archInst);
-            while (ptr != '\n'){
-                opActual[0] = ptr;
-                ptr = fgetc(archInst);
-                opActual[1] = ptr;
-                if (!strcmp(opActual, tipoOp))
-                    return 1;
-                else while (ptr != ','){
-                    if (ptr == '\n') return 0;
-                    else ptr = fgetc(archInst);
-                }
-                ptr = fgetc(archInst);
-            }
-        }
-        else while (ptr != '\n'){
-            ptr = fgetc(archInst);
-        }
-
-        ptr = fgetc(archInst);
-        cont++;
-    }
-    fclose(archInst);
-    return 0;
-}
-
-int loadASM(char* arch){
-    char cwd[1024];
-    char* path = getcwd(cwd, sizeof(cwd));
-
-    char* pathArch = malloc (sizeof(cwd));
-    strcpy(pathArch, path);
-    strcat(pathArch, "/listainstr.txt");
-    FILE* archInst = fopen (pathArch, "r");
-
-    char* pathS = malloc (sizeof(cwd)+1);
-    strcpy(pathS, path);
-    strcat(pathS, "/");
-
-    char* pathUs = malloc (sizeof(cwd)+25);
-    strcpy(pathUs, pathS);
-    strcat(pathUs, arch);
-    FILE* archUs = fopen (pathUs, "r");
-    
-    free(pathS);
-    free(pathUs);
-    free(pathArch);
-    path = NULL;
-    memset(cwd, 0, 1024);
-
-    if (!archUs)
-        return -1;
-
-    int ptr = fgetc(archUs);
-
-    int cont = 0;
-
-    while (ptr != EOF){
-        char* instUs = getInstrLinea (arch, cont);
-        while (ptr != '\n'){
-            int numInst = 0;
-            while (numInst < contLineas("listainstr.txt")){
-                char* instDef = getInstrLinea ("listainstr.txt", numInst);
-                if (!strcmp(instUs, instDef)){
-                    printf("Instrucciones coinciden, %s con %s.\n", instUs, instDef);
-                    while (ptr != ' ' && ptr != '\n'){
-                        ptr = fgetc(archUs);
-                    }
-                    
-                    printf("Sin operandos?\n");
-                    if (ptr == '\n' && (numOper(numInst) != 0)) return -1;
-                    else if (ptr == '\n') break;
-                    ptr = fgetc(archUs);
-                    
-                    printf("Un operando?\n");
-                    char* oper1;
-
-                    while (ptr != ',' && ptr != '\n'){
-                        if (ptr == 'A' || ptr == 'B' || ptr == 'C' || ptr == 'D'){
-                            ptr = getc(archUs);
-                            if (ptr == 'X'){
-                                if (operInst(numInst, "AX")){
-                                    ptr = getc(archUs);
-                                    break;
-                                }
-                                else return -1;
-                            }
-                            else if (ptr == 'H' || ptr == 'L'){
-                                if (operInst(numInst, "AL")){
-                                    ptr = getc(archUs);
-                                    break;
-                                }
-                                else return -1;
-                            }
-                            else return -1;
-                        }
-                        else if (ptr == 'a' || ptr == 'b' || ptr == 'c' || ptr == 'd'){
-                            ptr = getc(archUs);
-                            if (ptr == 'x'){
-                                if (operInst(numInst, "AX")){
-                                    ptr = getc(archUs);
-                                    break;
-                                }
-                                else return -1;
-                            }
-                            else if (ptr == 'h' || ptr == 'l'){
-                                if (operInst(numInst, "AX")){
-                                    ptr = getc(archUs);
-                                    break;
-                                }
-                                else return -1;
-                            }
-                            else return -1;
-                        }
-                        else if (ptr == '['){
-                            ptr = fgetc(archUs);
-                            if (operInst(numInst, "[]")){
-                                if (ptr == 'B'){
-                                    ptr = fgetc(archUs);
-                                    if (ptr == 'L' || ptr == 'H'){
-                                        ptr = fgetc(archUs);
-                                        ptr = fgetc(archUs);
-                                        break;
-                                    }
-                                    else return -1;
-                                }
-                                else if (ptr == 'b'){
-                                    ptr = fgetc(archUs);
-                                    if (ptr == 'l' || ptr == 'k'){
-                                        ptr = fgetc(archUs);
-                                        ptr = fgetc(archUs);
-                                        break;
-                                    }
-                                    else return -1;
-                                }
-                                else if (ptr >= 0x30 && ptr <= 0x39){
-                                    while (ptr != ']'){
-                                        if (ptr >= 0x30 && ptr <= 0x39) continue;
-                                        else return -1;
-                                        ptr = fgetc(archUs);
-                                    }
-                                    ptr = fgetc(archUs);
-                                }
-                                else return -1;
-                            }
-                            else return -1;
-                        }
-                        else if (ptr >= 0x30 && ptr <= 0x39){
-                            while (ptr != '\n'){
-                                if (ptr >= 0x30 && ptr <= 0x39) continue;
-                                else return -1;
-                            }
-                        }
-                        ptr = getc(archUs);
-                    }
-
-                    if (ptr == '\n' && numOper(numInst) != 1) return -1;
-
-                    else if(ptr == '\n') break;
-
-                    else if (ptr == ',' && numOper(numInst) != 2) return -1;
-                    
-                    else if (ptr == ','){
-                    printf("Dos operandos?\n");
-                        while (ptr != '\n'){
-                            if (ptr == 'A' || ptr == 'B' || ptr == 'C' || ptr == 'D'){
-                                ptr = getc(archUs);
-                                if (ptr == 'X'){
-                                    if (operInst(numInst, "AX")){
-                                        ptr = getc(archUs);
-                                        break;
-                                    }
-                                    else return -1;
-                                }
-                                else if (ptr == 'H' || ptr == 'L'){
-                                    if (operInst(numInst, "AL")){
-                                        ptr = getc(archUs);
-                                        break;
-                                    }
-                                    else return -1;
-                                }
-                                else return -1;
-                            }
-                            else if (ptr == 'a' || ptr == 'b' || ptr == 'c' || ptr == 'd'){
-                                ptr = getc(archUs);
-                                if (ptr == 'x'){
-                                    if (operInst(numInst, "AX")){
-                                        ptr = getc(archUs);
-                                        break;
-                                    }
-                                    else return -1;
-                                }
-                                else if (ptr == 'h' || ptr == 'l'){
-                                    if (operInst(numInst, "AX")){
-                                        ptr = getc(archUs);
-                                        break;
-                                    }
-                                    else return -1;
-                                }
-                                else return -1;
-                            }
-                            else if (ptr == '['){
-                                ptr = fgetc(archUs);
-                                if (operInst(numInst, "[]")){
-                                    if (ptr == 'B'){
-                                        ptr = fgetc(archUs);
-                                        if (ptr == 'L' || ptr == 'H'){
-                                            ptr = fgetc(archUs);
-                                            ptr = fgetc(archUs);
-                                            break;
-                                        }
-                                        else return -1;
-                                    }
-                                    else if (ptr == 'b'){
-                                        ptr = fgetc(archUs);
-                                        if (ptr == 'l' || ptr == 'k'){
-                                            ptr = fgetc(archUs);
-                                            ptr = fgetc(archUs);
-                                            break;
-                                        }
-                                        else return -1;
-                                    }
-                                    else if (ptr >= 0x30 && ptr <= 0x39){
-                                        while (ptr != ']'){
-                                            if (ptr >= 0x30 && ptr <= 0x39) continue;
-                                            else return -1;
-                                            ptr = fgetc(archUs);
-                                        }
-                                        ptr = fgetc(archUs);
-                                    }
-                                    else return -1;
-                                }
-                                else return -1;
-                            }
-                            else if (ptr >= 0x30 && ptr <= 0x39){
-                                while (ptr != '\n'){
-                                    if (ptr >= 0x30 && ptr <= 0x39) continue;
-                                    else return -1;
-                                }
-                            }
-                            ptr = getc(archUs);
-                        }
-                        break;
-                    }
-                    else return -1;
-                }
-                numInst++;
-                if (numInst == 12) return -1;
-            }
-            if (ptr == '\n') break;
-            ptr = fgetc(archUs);
-        }
-        cont++;
-        ptr = fgetc(archUs);
-        instUs = NULL;
-    }
-
-    fclose(archInst);
-    fclose(archUs);
-    return 0;
-}
-
 
 /* MICROINSTRUCCIONES */
 
 /* movReg (<-):permite mover datos del registro X al registro Y */
-void movReg(int R1, int R2){ /* R1 <- R2 */
-    R1 = R2;
+void movReg(short* R1, short* R2){ /* R1 <- R2 */
+    int tmp = &R2;
+    *R1 = tmp;
 }
 
 /* ALU: op [ejecuta la operación correspondiente de la ALU (add, sub, mul, div, and, or, xor, not, shl o shr)] */
 void ALU(char* operacion){
-    if (operacion = "add")		{add();}
-    else if (operacion == "sub")	{sub();}
-    else if (operacion == "mul")	{mul();}
-    else if (operacion == "div")	{div_mod();}
-    else if (operacion == "and")	{and();}
-    else if (operacion == "or")		{or();}
-    else if (operacion == "xor")	{xor();}
-    else if (operacion == "not")	{not();}
-    else if (operacion == "shl")	{shl();}
-    else if (operacion == "shr")	{shr();}   
+    if (!strcmp(operacion, "add"))		{add();}
+    else if (!strcmp(operacion, "sub"))		{sub();}
+    else if (!strcmp(operacion, "mul"))		{mul();}
+    else if (!strcmp(operacion, "div_mod"))	{div_mod();}
+    else if (!strcmp(operacion, "and"))		{and();}
+    else if (!strcmp(operacion, "or"))		{or();}
+    else if (!strcmp(operacion, "xor"))		{xor();}
+    else if (!strcmp(operacion, "not"))		{not();}
+    else if (!strcmp(operacion, "shl"))		{shl();}
+    else if (!strcmp(operacion, "shr"))		{shr();}   
 }
 
 /* MEM: op [ejecuta la operación de acceso a la memoria correspondiente (read o write)] */
 void MEM(char* tipo){
-    if (tipo == "read"){READ();}
-    else if (tipo == "write"){WRITE();}
+    if (strcmp(tipo, "read")){READ();}
+    else if (strcmp(tipo, "write")){WRITE();}
 }
 
 void READ(short address){
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */
     MAR = address;
     MBR = Memoria[MAR];
 }
 
 void WRITE(struct Inst Buffer, short Address){
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */
     MBR = Buffer;
     MAR = Address;
 }
 
 /* TEST: flag, N [bifurca a la instrucción N del microprograma si la bandera flag está encendida] */
 void TEST(char flag, char N){
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */
     if (flag=1){
-	MAR = N;}
+	PC = N;}
     else{
 	return;}
 }
 
 /* IN [abre una ventana y solicita un número que dejará almacenado en el MBR] */
-void IN(int num){
-    MBR.orden = 0;
-    MBR.cod = 0;
-    MBR.opF = 0;
-    MBR.opD = 0;
-    MBR.dato4 = num;
+void IN(){ /*IN(short num)*/
+    /* CUANDO HAYA INTERFAZ, LOS DATOS NO SE RECIBIRAN EN PARAMETROS */\
+    short cambiar = 0;
+    scanf("%hd", &cambiar);										/*CAMBIAR A GRAFICA*/
+    MBR.orden = -1;
+    MBR.cod = -1;
+    MBR.opF = -1;
+    MBR.opD = -1;
+    MBR.dato4 = cambiar;
 }
 
 /* OUT [En la ventana de salida despliega el contenido del MBR] */
@@ -806,14 +387,122 @@ void OUT(){
     /* VENTANA QUE DESPLIEGA EL CONTENIDO DEL MBR */
 }
 
-int main(){    
-    /*printf("Digite un nombre de archivo: ");
-    scanf("%s", arch);*/
 
-    //char* x2 = getInstrLinea("arch.txt", 3);
-    int x = loadASM("arch.txt");
-    printf ("x: %d\n", x);
-    //printf ("x: %s\n", x2);
+/* INSTRUCCIONES */
+
+/* MOV */
+void MOV(){
+    movReg(*par1,*par2);
+}
+
+/* OUT	tiene 1 parametro */
+void outU(){
+    MBR.orden = -1;
+    MBR.cod = -1;
+    MBR.opF = -1;
+    MBR.opD = -1;
+    MBR.dato4 = *par1;
+    OUT();
+}
+
+/* IN 	tiene 1 parametro*/
+void inU(){
+    IN();
+    short y = MBR.dato4;
+    short* x = &y;
+    movReg(&par1,&x);
+}
+
+/* JMP */
+void JMP(){
+    PC = MBR.opD;
+}
+
+/* JZ */
+void JZ(){
+    if(ZF==1){
+	JMP();
+    }
+}
+
+short verificaS (short num1, short num2){
+    while(num1>0 && num2>0){
+	char u1 = num1 % 10;
+	char u2 = num2 % 10;
+
+	if (u1+u2>=10){return 1;}
+	else{
+	    num1 = num1 / 10;
+	    num2 = num2 / 10;}
+    }
+    return 0;
+}
+
+short pot(char base, char exp){ /* trabajara solo pot positivas, no hace falta validar*/ 
+    short result = 1;
+    while(exp>0){
+	result = result * base;
+	exp--;
+    }
+    return result;
+}
+
+short Complemento(short num){
+    char exp = 0;
+    while (num!=0){
+	exp++;
+	num=num/10;
+    }
+    return (pot(10,exp));
+}
+
+short restaS(short num1, short num2){
+    short compl = Complemento(num2);
+    return (verificaS(num1,compl));
+}
+
+/* CMP */
+void CMP(){/* destino = destino - fuente */ /* Afecta a CF, SF y ZF*/
+    short destino = *par1;
+    short fuente = *par2;
+    B3 = destino - fuente;
+    /* SIGN FLAG */
+    if (B3 < 0){SF = 1;}
+
+    /* ZERO FLAG */
+    if (B3 = 0){ZF = 1;}
+    
+    /* CARRY FLAG */
+    if (restaS(destino,fuente)==1){CF = 1;}
+}
+
+
+
+
+/* CLI */
+void cls(){
+    IF = 0;
+}
+
+/* STI */
+void sti(){
+    IF = 1;
+}
+
+
+int main (){
+    
+    /*short val1 = 0;*/
+    /*short val2 = 0;*/
+    printf("Digite un valor para B1: ");
+    scanf("%hd", &B1);
+    printf("Digite un valor para B2: ");
+    scanf("%hd", &B2);
+    add();
+    printf ("Resultado: %d\n", B3);
+    /*ALU("add");
+    printf("%i\n",B3);*/
+
    return 0;
 }
 
