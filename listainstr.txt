@@ -1,0 +1,13 @@
+mov:2:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL,[],##
+out:1:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL
+in:1:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL
+jmp:1:[]
+jz:1:[]
+cmp:2:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL,[],##
+cli:0
+sti:0
+add:2:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL,[],##
+sub:2:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL,[],##
+mul:1:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL,[],##
+div:1:AX,BX,CX,DX,AH,AL,BH,BL,CH,CL,DH,DL,[],##
+

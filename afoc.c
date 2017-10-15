@@ -1,17 +1,14 @@
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "memoria.h"
 
 /* Declaracion de Memoria */
 struct Inst Memoria[256]; 
 
-
-/* Registros completos */
-int AX,BX,CX,DX;
-
 /* Variables de los distintos parametros */
 int par1;
 int par2;
-
 
 /* Instruccion Actual (para la memoria) */
 int instActual = 0;
@@ -25,7 +22,7 @@ char IF = 0;
 /* b. UC: No hace falta */
 
 /* c. IR (struct)*/
-struct Inst IR; 
+struct Inst* IR = NULL; 
 
 /* d. PC */
 int PC = 0; 
@@ -36,16 +33,16 @@ char BH, BL = 0;
 char CH, CL = 0;
 char DH, DL = 0;
 
-/* Junta Registros */
-void XX (int XH, int XL, int X){ /*Toma cada registro y junta sus cantidades*/
+/* Junta Registros
+void XX (int XH, int XL, int X){ Toma cada registro y junta sus cantidades
     X = XH * 256 + XL;
-}
+}*/
 
-/* Separa (reparte) Registros */
-void repartirX(int XX, int L,int H){ /* Reparte los datos del registro el L Y el H, segun corresponda */
+/* Separa (reparte) Registros
+void repartirX(int XX, int L,int H){ Reparte los datos del registro el L Y el H, segun corresponda
     L=XX / 256;
     H= XX - (L * 256);
-}
+}*/
 
 short getReg(char reg){
     short RX;
@@ -173,7 +170,6 @@ short MAR = -1;
 /* j. MBR */
 struct Inst MBR;
 
-
 void mov (char fuente, char destino){
     destino = fuente;
 }
@@ -229,8 +225,8 @@ void cicloFetch(struct Inst Memoria[256]){
 	    break;
 	}
 	else if(estado==1){
-	    /*haga todo*/
-	    ftch1();
+	    //haga todo
+            ftch1();
 	    ftch2();
 	    ftch3();
 	    continue;
@@ -267,7 +263,6 @@ void cicloFetch(struct Inst Memoria[256]){
 	else if(estado==3){
 	    continue;
 	}
-        
     }
 }
 
@@ -288,10 +283,10 @@ void ftch3(){/*obtiene los operandos*/
     */
 
     switch (MBR.opD){
-    	    case 0: XX(AH,AL,AX); par1 = AX; break;
-	    case 1: XX(BH,BL,BX); par1 = BX; break;
-    	    case 2: XX(CH,CL,CX); par1 = CX; break;
-    	    case 3: XX(DH,DL,DX); par1 = DX; break;
+    	    case 0: par1 = getReg('A'); break;
+	    case 1: par1 = getReg('B'); break;
+    	    case 2: par1 = getReg('C'); break;
+    	    case 3: par1 = getReg('D'); break;
     	    case 4: par1 = AL; break;
     	    case 5: par1 = BL; break;
     	    case 6: par1 = CL; break;
@@ -307,10 +302,10 @@ void ftch3(){/*obtiene los operandos*/
     }
 
     switch (MBR.opF){
-    	    case 0: XX(AH,AL,AX); par2 = AX; break;
-	    case 1: XX(BH,BL,BX); par2 = BX; break;
-    	    case 2: XX(CH,CL,CX); par2 = CX; break;
-    	    case 3: XX(DH,DL,DX); par2 = DX; break;
+    	    case 0: par2 = getReg('A'); break;
+	    case 1: par2 = getReg('B'); break;
+    	    case 2: par2 = getReg('C'); break;
+    	    case 3: par2 = getReg('D'); break;
     	    case 4: par2 = AL; break;
     	    case 5: par2 = BL; break;
     	    case 6: par2 = CL; break;
@@ -325,6 +320,432 @@ void ftch3(){/*obtiene los operandos*/
     	    case 15: par2 = Memoria[PC].dato4; break;
     }
 }
+
+char* getInstrLinea(char* arch, int linea){
+    char cwd[1024];
+    char* path = getcwd(cwd, sizeof(cwd));
+
+    char* pathS = malloc (sizeof(cwd)+1);
+    strcpy(pathS, path);
+    strcat(pathS, "/");
+
+    char* pathUs = malloc (sizeof(cwd)+25);
+    strcpy(pathUs, pathS);
+    strcat(pathUs, arch);
+    FILE* archInstr = fopen (pathUs, "r");
+    
+    free(pathS);
+    free(pathUs);
+    path = NULL;
+    memset(cwd, 0, 1024);
+
+    if (!archInstr)
+        return NULL;
+
+    int ptr = fgetc(archInstr);
+
+    int cont = 0;
+
+    while (ptr != EOF){
+        if (cont == linea){
+            char* tmpInst = malloc(sizeof(char)*6);
+            int charInst = 0;
+            while (ptr != ' ' && ptr != ':' && ptr != '\n'){
+                tmpInst[charInst] = ptr;
+                ptr = fgetc(archInstr);
+                charInst++;
+            }
+            char* instr = malloc(sizeof(char)*charInst);
+            memset(instr, 0, 8);
+            while (charInst > 0){
+                charInst--;
+                *(instr+charInst) = *(tmpInst+charInst);
+            }
+            free(tmpInst);
+            return instr;
+        }
+
+        else while (ptr != '\n'){
+            ptr = fgetc(archInstr);
+        }
+        ptr = fgetc(archInstr);
+        cont++;
+    }
+
+    fclose(archInstr);
+    return NULL;
+}
+
+int contLineas(char* arch){
+    char cwd[1024];
+    char* path = getcwd(cwd, sizeof(cwd));
+
+    char* pathS = malloc (sizeof(cwd)+1);
+    strcpy(pathS, path);
+    strcat(pathS, "/");
+
+    char* pathUs = malloc (sizeof(cwd)+25);
+    strcpy(pathUs, pathS);
+    strcat(pathUs, arch);
+    FILE* archC = fopen (pathUs, "r");
+    
+    free(pathS);
+    free(pathUs);
+    path = NULL;
+    memset(cwd, 0, 1024);
+
+    if (!archC)
+        return NULL;
+
+    int ptr = fgetc(archC);
+
+    int cont = 0;
+
+    while (ptr != EOF){
+        while (ptr != '\n'){
+            ptr = fgetc(archC);
+        }
+        ptr = fgetc(archC);
+        cont++;
+    }
+
+    fclose(archC);
+    return cont;
+}
+
+int numOper(int lineaInstr){
+    char cwd[1024];
+    char* path = getcwd(cwd, sizeof(cwd));
+
+    char* pathArch = malloc (sizeof(cwd));
+    strcpy(pathArch, path);
+    strcat(pathArch, "/listainstr.txt");
+    FILE* archInst = fopen (pathArch, "r");
+
+    free(pathArch);
+    path = NULL;
+    memset(cwd, 0, 1024);
+
+    if (!archInst)
+        return NULL;
+
+    int ptr = fgetc(archInst);
+
+    int cont = 0;
+
+    while (ptr != EOF){
+        if (cont == lineaInstr){
+            while (ptr != ':'){
+                ptr = fgetc(archInst);
+            }
+            ptr = fgetc(archInst);
+            int cantOp = ptr - 0x30;
+            fclose(archInst);
+            return (cantOp);
+        }
+        else while (ptr != '\n'){
+            ptr = fgetc(archInst);
+        }
+
+        ptr = fgetc(archInst);
+        cont++;
+    }
+    fclose(archInst);
+    return -1;
+}
+
+int operInst(int linea, char* tipoOp){
+    char cwd[1024];
+    char* path = getcwd(cwd, sizeof(cwd));
+
+    char* pathArch = malloc (sizeof(cwd));
+    strcpy(pathArch, path);
+    strcat(pathArch, "/listainstr.txt");
+    FILE* archInst = fopen (pathArch, "r");
+
+    free(pathArch);
+    path = NULL;
+    memset(cwd, 0, 1024);
+
+    if (!archInst)
+        return NULL;
+
+    int ptr = fgetc(archInst);
+
+    int cont = 0;
+
+    char opActual[2];
+
+    while (ptr != EOF){
+        if (cont == linea){
+            while (ptr != ':'){
+                ptr = fgetc(archInst);
+            }
+            ptr = fgetc(archInst);
+            while (ptr != ':'){
+                ptr = fgetc(archInst);
+            }
+            ptr = fgetc(archInst);
+            while (ptr != '\n'){
+                opActual[0] = ptr;
+                ptr = fgetc(archInst);
+                opActual[1] = ptr;
+                if (!strcmp(opActual, tipoOp))
+                    return 1;
+                else while (ptr != ','){
+                    if (ptr == '\n') return 0;
+                    else ptr = fgetc(archInst);
+                }
+                ptr = fgetc(archInst);
+            }
+        }
+        else while (ptr != '\n'){
+            ptr = fgetc(archInst);
+        }
+
+        ptr = fgetc(archInst);
+        cont++;
+    }
+    fclose(archInst);
+    return 0;
+}
+
+int loadASM(char* arch){
+    char cwd[1024];
+    char* path = getcwd(cwd, sizeof(cwd));
+
+    char* pathArch = malloc (sizeof(cwd));
+    strcpy(pathArch, path);
+    strcat(pathArch, "/listainstr.txt");
+    FILE* archInst = fopen (pathArch, "r");
+
+    char* pathS = malloc (sizeof(cwd)+1);
+    strcpy(pathS, path);
+    strcat(pathS, "/");
+
+    char* pathUs = malloc (sizeof(cwd)+25);
+    strcpy(pathUs, pathS);
+    strcat(pathUs, arch);
+    FILE* archUs = fopen (pathUs, "r");
+    
+    free(pathS);
+    free(pathUs);
+    free(pathArch);
+    path = NULL;
+    memset(cwd, 0, 1024);
+
+    if (!archUs)
+        return -1;
+
+    int ptr = fgetc(archUs);
+
+    int cont = 0;
+
+    while (ptr != EOF){
+        char* instUs = getInstrLinea (arch, cont);
+        while (ptr != '\n'){
+            int numInst = 0;
+            while (numInst < contLineas("listainstr.txt")){
+                char* instDef = getInstrLinea ("listainstr.txt", numInst);
+                if (!strcmp(instUs, instDef)){
+                    printf("Instrucciones coinciden, %s con %s.\n", instUs, instDef);
+                    while (ptr != ' ' && ptr != '\n'){
+                        ptr = fgetc(archUs);
+                    }
+                    
+                    printf("Sin operandos?\n");
+                    if (ptr == '\n' && (numOper(numInst) != 0)) return -1;
+                    else if (ptr == '\n') break;
+                    ptr = fgetc(archUs);
+                    
+                    printf("Un operando?\n");
+                    char* oper1;
+
+                    while (ptr != ',' && ptr != '\n'){
+                        if (ptr == 'A' || ptr == 'B' || ptr == 'C' || ptr == 'D'){
+                            ptr = getc(archUs);
+                            if (ptr == 'X'){
+                                if (operInst(numInst, "AX")){
+                                    ptr = getc(archUs);
+                                    break;
+                                }
+                                else return -1;
+                            }
+                            else if (ptr == 'H' || ptr == 'L'){
+                                if (operInst(numInst, "AL")){
+                                    ptr = getc(archUs);
+                                    break;
+                                }
+                                else return -1;
+                            }
+                            else return -1;
+                        }
+                        else if (ptr == 'a' || ptr == 'b' || ptr == 'c' || ptr == 'd'){
+                            ptr = getc(archUs);
+                            if (ptr == 'x'){
+                                if (operInst(numInst, "AX")){
+                                    ptr = getc(archUs);
+                                    break;
+                                }
+                                else return -1;
+                            }
+                            else if (ptr == 'h' || ptr == 'l'){
+                                if (operInst(numInst, "AX")){
+                                    ptr = getc(archUs);
+                                    break;
+                                }
+                                else return -1;
+                            }
+                            else return -1;
+                        }
+                        else if (ptr == '['){
+                            ptr = fgetc(archUs);
+                            if (operInst(numInst, "[]")){
+                                if (ptr == 'B'){
+                                    ptr = fgetc(archUs);
+                                    if (ptr == 'L' || ptr == 'H'){
+                                        ptr = fgetc(archUs);
+                                        ptr = fgetc(archUs);
+                                        break;
+                                    }
+                                    else return -1;
+                                }
+                                else if (ptr == 'b'){
+                                    ptr = fgetc(archUs);
+                                    if (ptr == 'l' || ptr == 'k'){
+                                        ptr = fgetc(archUs);
+                                        ptr = fgetc(archUs);
+                                        break;
+                                    }
+                                    else return -1;
+                                }
+                                else if (ptr >= 0x30 && ptr <= 0x39){
+                                    while (ptr != ']'){
+                                        if (ptr >= 0x30 && ptr <= 0x39) continue;
+                                        else return -1;
+                                        ptr = fgetc(archUs);
+                                    }
+                                    ptr = fgetc(archUs);
+                                }
+                                else return -1;
+                            }
+                            else return -1;
+                        }
+                        else if (ptr >= 0x30 && ptr <= 0x39){
+                            while (ptr != '\n'){
+                                if (ptr >= 0x30 && ptr <= 0x39) continue;
+                                else return -1;
+                            }
+                        }
+                        ptr = getc(archUs);
+                    }
+
+                    if (ptr == '\n' && numOper(numInst) != 1) return -1;
+
+                    else if(ptr == '\n') break;
+
+                    else if (ptr == ',' && numOper(numInst) != 2) return -1;
+                    
+                    else if (ptr == ','){
+                    printf("Dos operandos?\n");
+                        while (ptr != '\n'){
+                            if (ptr == 'A' || ptr == 'B' || ptr == 'C' || ptr == 'D'){
+                                ptr = getc(archUs);
+                                if (ptr == 'X'){
+                                    if (operInst(numInst, "AX")){
+                                        ptr = getc(archUs);
+                                        break;
+                                    }
+                                    else return -1;
+                                }
+                                else if (ptr == 'H' || ptr == 'L'){
+                                    if (operInst(numInst, "AL")){
+                                        ptr = getc(archUs);
+                                        break;
+                                    }
+                                    else return -1;
+                                }
+                                else return -1;
+                            }
+                            else if (ptr == 'a' || ptr == 'b' || ptr == 'c' || ptr == 'd'){
+                                ptr = getc(archUs);
+                                if (ptr == 'x'){
+                                    if (operInst(numInst, "AX")){
+                                        ptr = getc(archUs);
+                                        break;
+                                    }
+                                    else return -1;
+                                }
+                                else if (ptr == 'h' || ptr == 'l'){
+                                    if (operInst(numInst, "AX")){
+                                        ptr = getc(archUs);
+                                        break;
+                                    }
+                                    else return -1;
+                                }
+                                else return -1;
+                            }
+                            else if (ptr == '['){
+                                ptr = fgetc(archUs);
+                                if (operInst(numInst, "[]")){
+                                    if (ptr == 'B'){
+                                        ptr = fgetc(archUs);
+                                        if (ptr == 'L' || ptr == 'H'){
+                                            ptr = fgetc(archUs);
+                                            ptr = fgetc(archUs);
+                                            break;
+                                        }
+                                        else return -1;
+                                    }
+                                    else if (ptr == 'b'){
+                                        ptr = fgetc(archUs);
+                                        if (ptr == 'l' || ptr == 'k'){
+                                            ptr = fgetc(archUs);
+                                            ptr = fgetc(archUs);
+                                            break;
+                                        }
+                                        else return -1;
+                                    }
+                                    else if (ptr >= 0x30 && ptr <= 0x39){
+                                        while (ptr != ']'){
+                                            if (ptr >= 0x30 && ptr <= 0x39) continue;
+                                            else return -1;
+                                            ptr = fgetc(archUs);
+                                        }
+                                        ptr = fgetc(archUs);
+                                    }
+                                    else return -1;
+                                }
+                                else return -1;
+                            }
+                            else if (ptr >= 0x30 && ptr <= 0x39){
+                                while (ptr != '\n'){
+                                    if (ptr >= 0x30 && ptr <= 0x39) continue;
+                                    else return -1;
+                                }
+                            }
+                            ptr = getc(archUs);
+                        }
+                        break;
+                    }
+                    else return -1;
+                }
+                numInst++;
+                if (numInst == 12) return -1;
+            }
+            if (ptr == '\n') break;
+            ptr = fgetc(archUs);
+        }
+        cont++;
+        ptr = fgetc(archUs);
+        instUs = NULL;
+    }
+
+    fclose(archInst);
+    fclose(archUs);
+    return 0;
+}
+
 
 /* MICROINSTRUCCIONES */
 
@@ -385,18 +806,14 @@ void OUT(){
     /* VENTANA QUE DESPLIEGA EL CONTENIDO DEL MBR */
 }
 
+int main(){    
+    /*printf("Digite un nombre de archivo: ");
+    scanf("%s", arch);*/
 
-int main (){
-    
-    /*short val1 = 0;*/
-    /*short val2 = 0;*/
-    printf("Digite un valor para B1: ");
-    scanf("%hd", &B1);
-    printf("Digite un valor para B2: ");
-    scanf("%hd", &B2);
-    add();
-    printf ("Resultado: %d\n", B3);
-
+    //char* x2 = getInstrLinea("arch.txt", 3);
+    int x = loadASM("arch.txt");
+    printf ("x: %d\n", x);
+    //printf ("x: %s\n", x2);
    return 0;
 }
 

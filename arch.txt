@@ -1,0 +1,6 @@
+add ax, bx
+sub bl, cl 
+cli
+in dx
+mov al, cl
+
