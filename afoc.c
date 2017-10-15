@@ -1,8 +1,10 @@
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include "memoria.h"
 
+/*------------------------PARTE LOGICA------------------------*/
 /* Declaracion de Memoria */
 struct Inst Memoria[256]; 
 
@@ -247,6 +249,7 @@ void cicloFetch(struct Inst Memoria[256]){
 	    continue;
 	}       
     }
+    /*MODIFICAR LA LABEL*/
 }
 
 
@@ -1213,27 +1216,320 @@ void sti(){
 }
 
 
-int main (){
-   struct Inst x = parseInstr("arch.txt", 3);
-   printf("Fuente: %d\nDestino: %d\nCuarto dato: %d\n", x.opF, x.opD, x.dato4);
-   return 0;
-   
+/*------------------------INTERFAZ GRAFICA------------------------*/
+static void load_activated(GtkWidget *f)
+{
+    g_print("\n");
 }
 
+static void bryan2_activated(GtkWidget *f)
+{
+    g_print("\n");
+}
+
+static void quit_activated(GtkWidget *f)
+{
+    g_print("\n");
+    gtk_main_quit();
+}
+
+static void another_activated(GtkWidget *widget, gpointer data)
+{
+    g_print("\n", (gchar*)data);
+}
+
+void UCF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void IRF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void PCF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void RTF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void FF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void ALUF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void B1F(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void B2F(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void B3F(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void B4F(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void MARF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void MBRF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void PLAYF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void PAUSEF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void STOPF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void STEPF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void RESETF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void LOADF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void MEMF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void ACERCAF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+void AYUDAF(GtkWidget *widget,
+                   GtkWidget *bryan_box){
+    g_print("Falto agregar funcionalidad al boton");
+}
+
+int main( int argc, char *argv[])
+{
+    GtkWidget *window;
+    GtkWidget *box;
+    GtkWidget *menubar;
+    GtkWidget *filemenu;
+    GtkWidget *file;
+    GtkWidget *load;
+    GtkWidget *fixed;
+    GtkWidget *bryan2;
+    GtkWidget *quit;
+
+/* BOTONES IMPORTANTES */
+/* UC */
+    GtkWidget *UC;
+/* IR */
+    GtkWidget *IR;
+/* PC */
+    GtkWidget *PC;
+/* RT */
+    GtkWidget *RT;
+/* Flags */
+    GtkWidget *F;
+/* ALU */
+    GtkWidget *ALU;
+/* B1 */
+    GtkWidget *B1;
+/* B2 */
+    GtkWidget *B2;
+/* B3 */
+    GtkWidget *B3;
+/* B4 */
+    GtkWidget *B4;
+/* MAR */
+    GtkWidget *MAR;
+/* MBR */
+    GtkWidget *MBR;
+/*LOAD*/
+    GtkWidget *LOAD;
+/*PLAY*/
+    GtkWidget *PLAY;
+/*PAUSE*/
+    GtkWidget *PAUSE;
+/*STEP*/
+    GtkWidget *STEP;
+/*RESET*/
+    GtkWidget *RESET;
+/*STOP*/
+    GtkWidget *STOP;
+/*MEM*/
+    GtkWidget *MEM;
+/*ACERCA DE Y AYUDA*/
+    GtkWidget *ACERCA;
+    GtkWidget *AYUDA;
+/* DONDE SE VA MOSTRANDO TODO */
+    GtkWidget *label;
 
 
+/**/
+   GtkWidget *bryan;
+   GtkWidget *bryan_box;
+    
+/**/
+
+    GtkWidget *anothermenu;
+    GtkWidget *another;
+    GtkWidget *anothermenuitem;
+
+    gtk_init(&argc, &argv);
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    //gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size(GTK_WINDOW(window), 1200, 800);
+    gtk_window_set_title(GTK_WINDOW(window), "AFOC: Simulador Arquitectura de Von Neumann");
+    
+    fixed = gtk_fixed_new ();
+    bryan_box = gtk_fixed_new ();
+    gtk_container_add (GTK_CONTAINER (window), bryan_box);
 
 
+    menubar = gtk_menu_bar_new();
+
+    filemenu = gtk_menu_new();
+    file = gtk_menu_item_new_with_label("File");
+    bryan2 = gtk_menu_item_new_with_label("Esta es la Paleta");
+    /*bryan = gtk_button_new_with_label ("Este es el Boton");*/
+
+/**/
+    UC = gtk_button_new_with_label ("Unidad de Control");
+    IR = gtk_button_new_with_label ("Instruction Register");
+    PC = gtk_button_new_with_label ("Program Counter");
+    RT = gtk_button_new_with_label ("Registro de Trabajo");
+    F = gtk_button_new_with_label ("Banderas");
+    ALU = gtk_button_new_with_label ("Unidad Arimetica/Logica");
+    B1 = gtk_button_new_with_label ("B1");
+    B2 = gtk_button_new_with_label ("B2");
+    B3 = gtk_button_new_with_label ("B3");
+    B4 = gtk_button_new_with_label ("B4");
+    MAR = gtk_button_new_with_label ("Memory Address Register");
+    MBR = gtk_button_new_with_label ("Memery Buffer Register");
+    PLAY = gtk_button_new_with_label ("PLAY");
+    PAUSE = gtk_button_new_with_label ("PAUSE");
+    RESET = gtk_button_new_with_label ("RESET");
+    LOAD = gtk_button_new_with_label ("LOAD");
+    STOP = gtk_button_new_with_label ("STOP");
+    STEP = gtk_button_new_with_label ("STEP");
+    MEM = gtk_button_new_with_label ("Memoria");
+    label = gtk_label_new("*Aqui estara la linea en actual ejecucion*");
+    ACERCA = gtk_button_new_with_label ("ACERCA DE");
+    AYUDA = gtk_button_new_with_label ("AYUDA");    
+
+/**/
+    load = gtk_menu_item_new_with_label("Load");
+    quit = gtk_menu_item_new_with_label("Quit");
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), load);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), bryan2);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quit);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
+
+    //Connects GCallback function load_activated to "activate" signal for "load" menu item
+    
+    g_signal_connect(G_OBJECT(load), "activate", G_CALLBACK(load_activated), NULL);
+
+    g_signal_connect(G_OBJECT(bryan2), "activate", G_CALLBACK(bryan2_activated), NULL);
+
+    //Connects GCallback function quit_activated to "activate" signal for "quit" menu item
+    g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(quit_activated), NULL);
+
+    anothermenu = gtk_menu_new();
+    another = gtk_menu_item_new_with_label("Another");
+    anothermenuitem = gtk_menu_item_new_with_label("Another Menu Item");
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(another), anothermenu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(anothermenu), anothermenuitem);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), another);
+
+    //Connects GCallback function another_activated to "activate" signal for another
+    g_signal_connect(G_OBJECT(anothermenuitem), "activate", G_CALLBACK(another_activated), "anothermenuitem");
+    g_signal_connect(G_OBJECT(another), "activate", G_CALLBACK(another_activated), "another");
+    /*g_signal_connect (G_OBJECT (bryan), "clicked", G_CALLBACK (imprime), (gpointer) bryan);*/
+
+/**/
+    g_signal_connect (G_OBJECT (UC), "clicked", G_CALLBACK (UCF), (gpointer) UC);
+    g_signal_connect (G_OBJECT (IR), "clicked", G_CALLBACK (IRF), (gpointer) IR);
+    g_signal_connect (G_OBJECT (PC), "clicked", G_CALLBACK (PCF), (gpointer) PC);
+    g_signal_connect (G_OBJECT (RT), "clicked", G_CALLBACK (RTF), (gpointer) RT);
+    g_signal_connect (G_OBJECT (F), "clicked", G_CALLBACK (FF), (gpointer) F);
+    g_signal_connect (G_OBJECT (ALU), "clicked", G_CALLBACK (ALUF), (gpointer) ALU);
+    g_signal_connect (G_OBJECT (B1), "clicked", G_CALLBACK (B1F), (gpointer) B1);
+    g_signal_connect (G_OBJECT (B2), "clicked", G_CALLBACK (B2F), (gpointer) B2);
+    g_signal_connect (G_OBJECT (B3), "clicked", G_CALLBACK (B3F), (gpointer) B3);
+    g_signal_connect (G_OBJECT (B4), "clicked", G_CALLBACK (B4F), (gpointer) B4);
+    g_signal_connect (G_OBJECT (MAR), "clicked", G_CALLBACK (MARF), (gpointer) MAR);
+    g_signal_connect (G_OBJECT (MBR), "clicked", G_CALLBACK (MBRF), (gpointer) MBR);
+    g_signal_connect (G_OBJECT (MEM), "clicked", G_CALLBACK (MEMF), (gpointer) MEM);
+    g_signal_connect (G_OBJECT (PLAY), "clicked", G_CALLBACK (PLAYF), (gpointer) PLAY);
+    g_signal_connect (G_OBJECT (PAUSE), "clicked", G_CALLBACK (PAUSEF), (gpointer) PAUSE);
+    g_signal_connect (G_OBJECT (STOP), "clicked", G_CALLBACK (STOPF), (gpointer) STOP);
+    g_signal_connect (G_OBJECT (RESET), "clicked", G_CALLBACK (RESETF), (gpointer) RESET);
+    g_signal_connect (G_OBJECT (STEP), "clicked", G_CALLBACK (STEPF), (gpointer) STEP);
+    g_signal_connect (G_OBJECT (LOAD), "clicked", G_CALLBACK (LOADF), (gpointer) LOAD);
+    g_signal_connect (G_OBJECT (ACERCA), "clicked", G_CALLBACK (ACERCAF), (gpointer) ACERCA);
+    g_signal_connect (G_OBJECT (AYUDA), "clicked", G_CALLBACK (AYUDAF), (gpointer) AYUDA);
+/**/
+    box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_box_pack_start(GTK_BOX(box), menubar, FALSE, FALSE, 3);
+    gtk_container_add(GTK_CONTAINER(window), box);
+
+    /*gtk_fixed_put (GTK_FIXED (bryan_box), bryan, 150, 150);*/
+
+/**/
+    gtk_fixed_put (GTK_FIXED (bryan_box), UC, 50, 50);
+    gtk_fixed_put (GTK_FIXED (bryan_box), IR, 50, 150);
+    gtk_fixed_put (GTK_FIXED (bryan_box), PC, 50, 250);
+    gtk_fixed_put (GTK_FIXED (bryan_box), RT, 500, 50);
+    gtk_fixed_put (GTK_FIXED (bryan_box), F, 500, 150);
+    gtk_fixed_put (GTK_FIXED (bryan_box), ALU, 500, 250);
+    gtk_fixed_put (GTK_FIXED (bryan_box), B1, 500, 275);
+    gtk_fixed_put (GTK_FIXED (bryan_box), B2, 530, 275);
+    gtk_fixed_put (GTK_FIXED (bryan_box), B3, 560, 275);
+    gtk_fixed_put (GTK_FIXED (bryan_box), B4, 590, 275);
+    gtk_fixed_put (GTK_FIXED (bryan_box), MAR, 500, 375);
+    gtk_fixed_put (GTK_FIXED (bryan_box), MBR, 500, 400);
+    gtk_fixed_put (GTK_FIXED (bryan_box), MEM, 950, 50);
+    gtk_fixed_put (GTK_FIXED (bryan_box), PLAY, 950, 150);
+    gtk_fixed_put (GTK_FIXED (bryan_box), PAUSE, 950, 175);
+    gtk_fixed_put (GTK_FIXED (bryan_box), RESET, 950, 200);
+    gtk_fixed_put (GTK_FIXED (bryan_box), STEP, 950, 225);
+    gtk_fixed_put (GTK_FIXED (bryan_box), STOP, 950, 250);
+    gtk_fixed_put (GTK_FIXED (bryan_box), label, 350, 500);
+    gtk_fixed_put (GTK_FIXED (bryan_box), ACERCA, 950, 350);
+    gtk_fixed_put (GTK_FIXED (bryan_box), AYUDA, 950, 375);
+
+/**/
+
+    //Connects GCallback function gtk_main_quit to "destroy" signal for "window"
+    g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 
+    gtk_widget_show_all(window);
+    gtk_main();
 
+    struct Inst x = parseInstr("arch.txt", 3);
+    printf("Fuente: %d\nDestino: %d\nCuarto dato: %d\n", x.opF, x.opD, x.dato4);
+    printf("si pasa");
 
-
-
-
-
-
-
-
-
-
+    return 0;
+}
